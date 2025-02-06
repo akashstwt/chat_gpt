@@ -1,5 +1,6 @@
 import 'package:chat_gpt/constants/constant.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
+import 'package:chat_gpt/widgets/chat_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -47,7 +48,8 @@ class _ChatScreenState extends State<ChatScreen> {
         actions: [
           IconButton(
             onPressed: () {},
-            icon: const Icon(Icons.more_vert_rounded,
+            icon: const Icon(
+              Icons.more_vert_rounded,
               color: Colors.white,
             ),
           ),
@@ -60,8 +62,12 @@ class _ChatScreenState extends State<ChatScreen> {
               child: ListView.builder(
                 itemCount: 6,
                 itemBuilder: (context, index) {
-                  return const Text("Message");
-                },
+                  return ChatWidget(
+                    msg: chatMessages[index]["msg"].toString(),
+                    chatIndex:
+                        int.parse(chatMessages[index]["chatIndex"].toString()),
+                  );
+                }, 
               ),
             ),
             if (_isTyping) ...[
@@ -73,7 +79,8 @@ class _ChatScreenState extends State<ChatScreen> {
               Container(
                 color: cardColor,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8.0, vertical: 4.0),
                   child: Row(
                     children: [
                       Expanded(
