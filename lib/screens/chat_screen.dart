@@ -1,6 +1,8 @@
 import 'package:chat_gpt/constants/constant.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
+import 'package:chat_gpt/services/services.dart';
 import 'package:chat_gpt/widgets/chat_widget.dart';
+import 'package:chat_gpt/widgets/text_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
@@ -47,7 +49,9 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              await Services.showModalSheet(context: context);
+            },
             icon: const Icon(
               Icons.more_vert_rounded,
               color: Colors.white,
@@ -67,7 +71,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     chatIndex:
                         int.parse(chatMessages[index]["chatIndex"].toString()),
                   );
-                }, 
+                },
               ),
             ),
             if (_isTyping) ...[
