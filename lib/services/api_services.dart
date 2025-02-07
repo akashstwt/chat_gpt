@@ -1,6 +1,7 @@
+import 'dart:developer';
 import 'dart:io';
-import 'package:chat_gpt/constants/api_const.dart';
 import 'package:chat_gpt/models/models_model.dart';
+import 'package:chat_gpt/secrets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -27,8 +28,8 @@ class ApiServices {
 
       return models;
     } catch (error) {
-      print("error $error");
-      throw Exception("Failed to load models");
+      log("error $error");
+      rethrow;  
     }
   }
 }
