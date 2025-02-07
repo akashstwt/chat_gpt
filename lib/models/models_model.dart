@@ -9,13 +9,15 @@ class ModelsModel {
     required this.root,
   });
 
-  factory ModelsModel.fromJson(Map<String, dynamic> json) => ModelsModel(
-        id: json['id'],
-        created: json['created'],
-        root: json['root'],
-      );
+  factory ModelsModel.fromJson(Map<String, dynamic> json) {
+    return ModelsModel(
+      id: json['id'],
+      created: json['created'],
+      root: json['root'],
+    );
+  }
 
-      static  List<ModelsModel> modelsFromSnapshot (List modelSnapshot){
-        return modelSnapshot.map((data) => ModelsModel.fromJson(data)).toList();
-      }
+  static List<ModelsModel> modelsFromSnapshot(List modelSnapshot) {
+    return modelSnapshot.map((data) => ModelsModel.fromJson(data)).toList();
+  }
 }

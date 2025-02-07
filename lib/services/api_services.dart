@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:chat_gpt/constants/api_const.dart';
 import 'package:chat_gpt/models/models_model.dart';
