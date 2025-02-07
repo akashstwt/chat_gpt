@@ -1,23 +1,23 @@
 class ModelsModel {
   final String id;
   final int created;
-  final String root;
+  final String object;
 
   ModelsModel({
     required this.id,
     required this.created,
-    required this.root,
+    required this.object,
   });
 
   factory ModelsModel.fromJson(Map<String, dynamic> json) {
     return ModelsModel(
       id: json['id'],
       created: json['created'],
-      root: json['root'],
+      object: json['object'], 
     );
   }
 
-  static List<ModelsModel> modelsFromSnapshot(List modelSnapshot) {
+  static List<ModelsModel> modelsFromSnapshot(List<dynamic> modelSnapshot) {
     return modelSnapshot.map((data) => ModelsModel.fromJson(data)).toList();
   }
 }

@@ -12,7 +12,7 @@ class ModalsDropDownWidget extends StatefulWidget {
 }
 
 class _ModalsDropDownWidgetState extends State<ModalsDropDownWidget> {
-  String currentModel = "dall-e-2";
+  String currentModel = "gpt-4o-mini";
 
   @override
   Widget build(BuildContext context) {
@@ -24,28 +24,31 @@ class _ModalsDropDownWidgetState extends State<ModalsDropDownWidget> {
               child: TextWidget(label: snapshot.error.toString()),
             );
           }
-          return snapshot.data == null || snapshot.data!.isEmpty
-              ? const SizedBox.shrink()
-              : DropdownButton(
-                  dropdownColor: scaffoldBackgroundColor,
-                  iconEnabledColor: Colors.white,
-                  items: List<DropdownMenuItem<String>>.generate(
-                    snapshot.data!.length,
-                    (index) => DropdownMenuItem(
-                      value: snapshot.data![index].id,
-                      child: TextWidget(
-                        label: snapshot.data![index].id,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                  value: currentModel,
-                  onChanged: (value) {
-                    setState(() {
-                      currentModel = value.toString();
-                    });
-                  },
-                );
+
+          return snapshot.connectionState == ConnectionState.waiting
+              ? const CircularProgressIndicator()
+              : snapshot.data == null || snapshot.data!.isEmpty
+                  ? const SizedBox.shrink()
+                  : DropdownButton<String>(
+                      dropdownColor: scaffoldBackgroundColor,
+                      iconEnabledColor: Colors.white,
+                      items: snapshot.data!.map((model) {
+                        return DropdownMenuItem(
+                          value: model.id,
+                          child: TextWidget(
+                            color: Colors.white,
+                            label: model.id,
+                            fontSize: 15,
+                          ),
+                        );
+                      }).toList(),
+                      value: currentModel,
+                      onChanged: (value) {
+                        setState(() {
+                          currentModel = value!;
+                        });
+                      },
+                    );
         });
   }
 }

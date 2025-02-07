@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:chat_gpt/constants/api_const.dart';
 import 'package:chat_gpt/models/models_model.dart';
 import 'package:http/http.dart' as http;
@@ -14,19 +13,19 @@ class ApiServices {
           'Authorization': 'Bearer $API_KEY',
         },
       );
-      Map jsonResponse = jsonDecode(response.body);
+      Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
       if (jsonResponse['error'] != null) {
         // print("jsonResponse['error'] ${jsonResponse['error']['message']}");
         throw HttpException(jsonResponse['error']['message']);
       }
       // print("jsonResponse $jsonResponse");
-      List temp = [];
-      for (var value in jsonResponse['data']) {
-        temp.add(value);
-        print("temp ${value['id']}");
-      }
-      return ModelsModel.modelsFromSnapshot(temp);
+      List<ModelsModel> models = ModelsModel.modelsFromSnapshot(jsonResponse['data']);
+
+      // Sort the models by ID before returning
+      models.sort((a, b) => a.id.compareTo(b.id));
+
+      return models;
     } catch (error) {
       print("error $error");
       throw Exception("Failed to load models");
