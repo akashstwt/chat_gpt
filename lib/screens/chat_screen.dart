@@ -1,10 +1,14 @@
+
 import 'package:chat_gpt/constants/constant.dart';
+import 'package:chat_gpt/models/chat_model.dart';
+import 'package:chat_gpt/providers/models_provider.dart';
 import 'package:chat_gpt/services/api_services.dart';
 import 'package:chat_gpt/services/assets_manager.dart';
 import 'package:chat_gpt/services/services.dart';
 import 'package:chat_gpt/widgets/chat_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:provider/provider.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -14,7 +18,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  final bool _isTyping = true;
+  bool _isTyping = false;
 
   late TextEditingController textEditingController;
 
@@ -30,8 +34,11 @@ class _ChatScreenState extends State<ChatScreen> {
     super.dispose();
   }
 
+  List<ChatModel> chatList = [];
+
   @override
   Widget build(BuildContext context) {
+    final modelsProvider = Provider.of<ModelsProvider>(context);
     return Scaffold(
       appBar: AppBar(
         elevation: 2,
@@ -60,69 +67,84 @@ class _ChatScreenState extends State<ChatScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            Flexible(
-              child: ListView.builder(
-                itemCount: 6,
-                itemBuilder: (context, index) {
-                  return ChatWidget(
-                    msg: chatMessages[index]["msg"].toString(),
-                    chatIndex:
-                        int.parse(chatMessages[index]["chatIndex"].toString()),
-                  );
-                },
+        child: Column(children: [
+          Flexible(
+            child: ListView.builder(
+              itemCount: chatList.length,
+              itemBuilder: (context, index) {
+                return ChatWidget(
+                  msg: chatList[index].msg,
+                  chatIndex: chatList[index].chatIndex,
+                );
+              },
+            ),
+          ),
+          if (_isTyping) ...[
+            const SpinKitThreeBounce(
+              color: Colors.white,
+              size: 18,
+            ),
+          ],
+          SizedBox(height: 15),
+          Container(
+            color: cardColor,
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      style: const TextStyle(color: Colors.white),
+                      controller: textEditingController,
+                      onSubmitted: (value) async {
+                        await sendMessage(
+                          modelsProvider: modelsProvider,
+                        );
+                      },
+                      decoration: const InputDecoration.collapsed(
+                        hintText: "How can I help you?",
+                        hintStyle: TextStyle(color: Colors.white),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      await sendMessage(
+                        modelsProvider: modelsProvider,
+                      );
+                    },
+                    icon: const Icon(
+                      Icons.send,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
             ),
-            if (_isTyping) ...[
-              const SpinKitThreeBounce(
-                color: Colors.white,
-                size: 18,
-              ),
-              SizedBox(height: 15),
-              Container(
-                color: cardColor,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0, vertical: 4.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          style: const TextStyle(color: Colors.white),
-                          controller: textEditingController,
-                          onSubmitted: (value) {
-                            // TODO: Send message
-                          },
-                          decoration: const InputDecoration.collapsed(
-                            hintText: "How can I help you?",
-                            hintStyle: TextStyle(color: Colors.white),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () async {
-                          try {
-                            await ApiServices.getModels();
-                          }
-                          catch (error) {
-                            print("error $error");
-                          }
-                        },
-                        icon: const Icon(
-                          Icons.send,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ]
-          ],
-        ),
+          ),
+        ]),
       ),
     );
+  }
+
+  Future<void> sendMessage({required ModelsProvider modelsProvider}) async {
+    try {
+      setState(() {
+        _isTyping = true;
+      });
+      chatList = await ApiService.sendMessage(
+        message: textEditingController.text,
+        modelId: modelsProvider.getCurrentModel,
+      );
+      setState(() {});
+    } catch (error) {
+      print("error $error");
+    } finally {
+      setState(() {
+        _isTyping = false;
+      });
+    }
   }
 }
