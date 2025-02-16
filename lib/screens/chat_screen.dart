@@ -1,4 +1,4 @@
-
+import 'dart:developer';
 import 'package:chat_gpt/constants/constant.dart';
 import 'package:chat_gpt/models/chat_model.dart';
 import 'package:chat_gpt/providers/models_provider.dart';
@@ -150,7 +150,7 @@ class _ChatScreenState extends State<ChatScreen> {
       chatList.addAll(responseMessages);
     });
   } catch (error) {
-    print("Error: $error");
+    log("Error: $error");
   } finally {
     setState(() {
       _isTyping = false;
