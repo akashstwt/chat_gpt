@@ -13,8 +13,4 @@ class ChatModel {
       chatIndex: json['chatIndex'],
     );
   }
-
-  // static List<ChatModel> chatFromSnapshot(List<dynamic> chatSnapshot) {
-  //   return chatSnapshot.map((choices) => ChatModel.fromJson(choices)).toList();
-  // }
 }

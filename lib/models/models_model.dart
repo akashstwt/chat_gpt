@@ -11,9 +11,9 @@ class ModelsModel {
 
   factory ModelsModel.fromJson(Map<String, dynamic> json) {
     return ModelsModel(
-      id: json['id'],
-      created: json['created'],
-      object: json['object'], 
+      id: json['id'] ?? '',
+      created: json['created'] ?? 0, // Default to 0 if null
+      object: json['object'] ?? '',
     );
   }
 

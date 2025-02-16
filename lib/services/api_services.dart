@@ -8,30 +8,32 @@ import 'package:chat_gpt/models/chat_model.dart';
 
 class ApiService {
   static Future<List<ModelsModel>> getModels() async {
-    try {
-      var response = await http.get(
-        Uri.parse("$BASE_URL/v1/models"),
-        headers: {'Authorization': 'Bearer $API_KEY'},
-      );
+  try {
+    var response = await http.get(
+      Uri.parse("https://openrouter.ai/api/v1/models"),  // Corrected URL
+      headers: {
+        'Authorization': 'Bearer $API_KEY',
+        'HTTP-Referer': 'https://your-app-domain.com',  // Required for OpenRouter
+      },
+    );
 
-      Map jsonResponse = jsonDecode(response.body);
-
-      if (jsonResponse['error'] != null) {
-        print("jsonResponse['error'] ${jsonResponse['error']["message"]}");
-        throw HttpException(jsonResponse['error']["message"]);
-      }
-      print("jsonResponse $jsonResponse");
-      List temp = [];
-      for (var value in jsonResponse["data"]) {
-        temp.add(value);
-        // log("temp ${value["id"]}");
-      }
-      return ModelsModel.modelsFromSnapshot(temp);
-    } catch (error) {
-      log("error $error");
-      rethrow;
+    if (response.statusCode != 200) {
+      throw HttpException("Failed to fetch models: ${response.statusCode}");
     }
+
+    Map jsonResponse = jsonDecode(response.body);
+
+    if (jsonResponse['error'] != null) {
+      throw HttpException(jsonResponse['error']["message"]);
+    }
+
+    List temp = jsonResponse["data"] ?? [];
+    return ModelsModel.modelsFromSnapshot(temp);
+  } catch (error) {
+    log("Error fetching models: $error");
+    rethrow;
   }
+}
 
   // Send Message fct
   static Future<List<ChatModel>> sendMessage({
@@ -40,63 +42,42 @@ class ApiService {
 }) async {
   try {
     var response = await http.post(
-      Uri.parse("$BASE_URL/v1/chat/completions"), // Update the endpoint if necessary
+      Uri.parse("https://openrouter.ai/api/v1/chat/completions"),  // Corrected URL
       headers: {
         'Authorization': 'Bearer $API_KEY',
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://your-app-domain.com',  // Required for OpenRouter
       },
-      body: jsonEncode(
-        {
-          "model": modelId,
-          "messages": [
-            {
-              "role": "user",
-              "content": message,
-            }
-          ],
-          "max_tokens": 100,
-        },
-      ),
+      body: jsonEncode({
+        "model": modelId,
+        "messages": [
+          {"role": "user", "content": message}
+        ],
+      }),
     );
 
-    // Check if the response status code is 200 (OK)
     if (response.statusCode != 200) {
       throw HttpException("Failed to send message: ${response.statusCode}");
     }
 
-    // Decode the JSON response
-    Map<String, dynamic> jsonResponse;
-    try {
-      jsonResponse = jsonDecode(response.body);
-    } catch (e) {
-      throw HttpException("Invalid JSON response: ${response.body}");
-    }
+    Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-    // Check if the response contains an error message
     if (jsonResponse['error'] != null) {
       throw HttpException(jsonResponse['error']['message']);
     }
 
-    // Ensure that the 'choices' field is present and is a List
-    if (jsonResponse['choices'] == null || jsonResponse['choices'] is! List) {
-      throw HttpException("Invalid response format: 'choices' field is missing or not a list");
-    }
+    List<ChatModel> chatList = (jsonResponse['choices'] as List)
+        .map((choice) => ChatModel(
+              msg: choice['message']['content'],
+              chatIndex: 1,
+            ))
+        .toList();
 
-    // Parse the response and create a list of ChatModel objects
-    List<ChatModel> chatList = [];
-    if (jsonResponse['choices'].length > 0) {
-      chatList = List.generate(
-        jsonResponse['choices'].length,
-        (index) => ChatModel(
-          msg: jsonResponse['choices'][index]['message']['content'],
-          chatIndex: 1,
-        ),
-      );
-    }
     return chatList;
   } catch (error) {
-    log("error $error");
+    log("Error sending message: $error");
     rethrow;
   }
 }
+
 }
