@@ -130,21 +130,32 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> sendMessage({required ModelsProvider modelsProvider}) async {
-    try {
-      setState(() {
-        _isTyping = true;
-      });
-      chatList = await ApiService.sendMessage(
-        message: textEditingController.text,
-        modelId: modelsProvider.currentModel,
-      );
-      setState(() {});
-    } catch (error) {
-      print("error $error");
-    } finally {
-      setState(() {
-        _isTyping = false;
-      });
-    }
+  try {
+    final userMessage = textEditingController.text.trim();
+    if (userMessage.isEmpty) return;
+
+    setState(() {
+      _isTyping = true;
+    });
+
+    textEditingController.clear();
+
+    // Get AI response
+    List<ChatModel> responseMessages = await ApiService.sendMessage(
+      message: userMessage,
+      modelId: modelsProvider.currentModel,
+    );
+
+    setState(() {
+      chatList.addAll(responseMessages);
+    });
+  } catch (error) {
+    print("Error: $error");
+  } finally {
+    setState(() {
+      _isTyping = false;
+    });
   }
+}
+
 }

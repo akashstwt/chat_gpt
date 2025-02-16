@@ -3,7 +3,7 @@ import 'package:chat_gpt/services/api_services.dart';
 import 'package:flutter/material.dart';
 
 class ModelsProvider with ChangeNotifier {
-  String _currentModel = "";
+  String _currentModel = "qwen/qwen-max";
 
   String get currentModel => _currentModel;
 

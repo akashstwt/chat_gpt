@@ -10,7 +10,7 @@ class ApiService {
   static Future<List<ModelsModel>> getModels() async {
   try {
     var response = await http.get(
-      Uri.parse("https://openrouter.ai/api/v1/models"),  // Corrected URL
+      Uri.parse("$BASE_URL/models"),  // Corrected URL
       headers: {
         'Authorization': 'Bearer $API_KEY',
         'HTTP-Referer': 'https://your-app-domain.com',  // Required for OpenRouter
@@ -42,17 +42,18 @@ class ApiService {
 }) async {
   try {
     var response = await http.post(
-      Uri.parse("https://openrouter.ai/api/v1/chat/completions"),  // Corrected URL
+      Uri.parse("$BASE_URL/chat/completions"),
       headers: {
         'Authorization': 'Bearer $API_KEY',
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://your-app-domain.com',  // Required for OpenRouter
+        'HTTP-Referer': 'https://your-app-domain.com',  // Replace with your app domain
       },
       body: jsonEncode({
         "model": modelId,
         "messages": [
           {"role": "user", "content": message}
         ],
+        "max_tokens": 100,
       }),
     );
 
@@ -62,22 +63,20 @@ class ApiService {
 
     Map<String, dynamic> jsonResponse = jsonDecode(response.body);
 
-    if (jsonResponse['error'] != null) {
+    if (jsonResponse.containsKey('error')) {
       throw HttpException(jsonResponse['error']['message']);
     }
 
-    List<ChatModel> chatList = (jsonResponse['choices'] as List)
-        .map((choice) => ChatModel(
-              msg: choice['message']['content'],
-              chatIndex: 1,
-            ))
-        .toList();
+    // Extract AI response from choices[0]
+    String aiResponse = jsonResponse['choices'][0]['message']['content'];
 
-    return chatList;
+    return [
+      ChatModel(msg: message, chatIndex: 0),  // User message
+      ChatModel(msg: aiResponse, chatIndex: 1),  // AI response
+    ];
   } catch (error) {
     log("Error sending message: $error");
     rethrow;
   }
 }
-
 }
