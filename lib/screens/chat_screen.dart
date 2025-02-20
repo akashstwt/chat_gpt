@@ -66,96 +66,104 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(children: [
-          Flexible(
-            child: ListView.builder(
-              itemCount: chatList.length,
-              itemBuilder: (context, index) {
-                return ChatWidget(
-                  msg: chatList[index].msg,
-                  chatIndex: chatList[index].chatIndex,
-                );
-              },
-            ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(AssetsManager.backgroundImg),
+            fit: BoxFit.cover,
+            opacity: 0.3,
           ),
-          if (_isTyping) ...[
-            const SpinKitThreeBounce(
-              color: Colors.white,
-              size: 18,
+        ),
+        child: SafeArea(
+          child: Column(children: [
+            Flexible(
+              child: ListView.builder(
+                itemCount: chatList.length,
+                itemBuilder: (context, index) {
+                  return ChatWidget(
+                    msg: chatList[index].msg,
+                    chatIndex: chatList[index].chatIndex,
+                  );
+                },
+              ),
             ),
-          ],
-          SizedBox(height: 15),
-          Container(
-            color: cardColor,
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      style: const TextStyle(color: Colors.white),
-                      controller: textEditingController,
-                      onSubmitted: (value) async {
+            if (_isTyping) ...[
+              const SpinKitThreeBounce(
+                color: Colors.white,
+                size: 18,
+              ),
+            ],
+            SizedBox(height: 15),
+            Container(
+              color: cardColor,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        style: const TextStyle(color: Colors.white),
+                        controller: textEditingController,
+                        onSubmitted: (value) async {
+                          await sendMessage(
+                            modelsProvider: modelsProvider,
+                          );
+                        },
+                        decoration: const InputDecoration.collapsed(
+                          hintText: "How can I help you?",
+                          hintStyle: TextStyle(color: Colors.white),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () async {
                         await sendMessage(
                           modelsProvider: modelsProvider,
                         );
                       },
-                      decoration: const InputDecoration.collapsed(
-                        hintText: "How can I help you?",
-                        hintStyle: TextStyle(color: Colors.white),
-                        border: InputBorder.none,
+                      icon: const Icon(
+                        Icons.send,
+                        color: Colors.white,
                       ),
                     ),
-                  ),
-                  IconButton(
-                    onPressed: () async {
-                      await sendMessage(
-                        modelsProvider: modelsProvider,
-                      );
-                    },
-                    icon: const Icon(
-                      Icons.send,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        ]),
+          ]),
+        ),
       ),
     );
   }
 
   Future<void> sendMessage({required ModelsProvider modelsProvider}) async {
-  try {
-    final userMessage = textEditingController.text.trim();
-    if (userMessage.isEmpty) return;
+    try {
+      final userMessage = textEditingController.text.trim();
+      if (userMessage.isEmpty) return;
 
-    setState(() {
-      _isTyping = true;
-    });
+      setState(() {
+        _isTyping = true;
+      });
 
-    textEditingController.clear();
+      textEditingController.clear();
 
-    // Get AI response
-    List<ChatModel> responseMessages = await ApiService.sendMessage(
-      message: userMessage,
-      modelId: modelsProvider.currentModel,
-    );
+      // Get AI response
+      List<ChatModel> responseMessages = await ApiService.sendMessage(
+        message: userMessage,
+        modelId: modelsProvider.currentModel,
+      );
 
-    setState(() {
-      chatList.addAll(responseMessages);
-    });
-  } catch (error) {
-    log("Error: $error");
-  } finally {
-    setState(() {
-      _isTyping = false;
-    });
+      setState(() {
+        chatList.addAll(responseMessages);
+      });
+    } catch (error) {
+      log("Error: $error");
+    } finally {
+      setState(() {
+        _isTyping = false;
+      });
+    }
   }
-}
-
 }
